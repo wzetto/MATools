@@ -55,10 +55,10 @@ class rao_model():
             r_ = r_top/r_bot
 
             #*tao_k
-            f1_ = tao_k**4 + s_*tao_k - r_bot
+            f1_ = tao_k**4 + s_*tao_k - r_
             res_list, tao_list = [], []
             tao_k_c = 2e8
-            temp = 1e5
+            temp = 1e7
             speed = 1e9
             step = 0
 
@@ -76,8 +76,8 @@ class rao_model():
                 if accep <= prob_:
                     tao_k_c = tao_chose
 
-                temp /= 1.1
-                speed /= 1.2
+                temp /= 1.05
+                speed /= 1.1
 
                 # if step % 10 == 0:
                     # clear_output(True)
