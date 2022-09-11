@@ -61,7 +61,7 @@ class rao_model():
             temp = 1e7
             speed = 1e9
             step = 0
-
+            #* While some simple methods are also viable for searching. This program uses SA.
             while True:
                 f1_res = abs(f1_.subs(tao_k, tao_k_c))
                 res_list.append(abs(f1_res.evalf()))

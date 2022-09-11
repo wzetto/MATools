@@ -55,5 +55,5 @@ if __name__ == '__main__':
 
     second_to_hour(time.time() - start_)
 
-    np.save(f'/media/wz/a7ee6d50-691d-431a-8efb-b93adc04896d/Github/MATools/Models/Suzuki_sss/ys_list_{comment}', ys_list)
-    np.save('/media/wz/a7ee6d50-691d-431a-8efb-b93adc04896d/Github/MATools/Models/Suzuki_sss/temp_list', t_list)
+    np.save(f'path', ys_list)
+    np.save('path', t_list)
