@@ -45,7 +45,7 @@ if __name__ == '__main__':
     comment = 'MoNbTaW'
     max_work = 15 #*Maximum number of processors for parallel computing
     ys_list, t_list = [], []
-    tf, q = 3.067, 2/3 #*Taylor factor for BCC and constant q.
+    tf, q = 3.067, 2/3 #*Taylor's factor for BCC and constant q, usually [2.7, 3.067].
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_work) as executor:
         ys_gen = executor.map(main, T)
