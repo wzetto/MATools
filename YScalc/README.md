@@ -8,4 +8,4 @@ Uniform Strain
 
 Yield Strengh / Ultimate Tensile Strength / Strength at propotional limit
 
-Sluggish codes but works.
+Sluggish code but works.
