@@ -1,0 +1,1 @@
+Configuration files for 1. generating the input files for VASP calculation. 2. Analyzing the output files from VASP calculation.

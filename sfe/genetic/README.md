@@ -1,0 +1,1 @@
+A Genetic Algorithm appoarch for generating FCC atomic configurations in (111) stacking sequences, based on special quasi-random strucuture theory.
