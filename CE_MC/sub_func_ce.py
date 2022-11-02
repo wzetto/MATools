@@ -171,3 +171,5 @@ def swap_step(action, cor_func_n, state, target_val):
     return state, reward, cor_func_new, done
 
 print(ideal_1, ideal_2, ideal_3, ideal_4, ideal_5, ideal_6)
+
+####
