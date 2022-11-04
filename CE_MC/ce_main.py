@@ -14,11 +14,11 @@ import pickle
 import multiprocessing as mp
 import time
 
-from torch.nn.utils import clip_grad_norm_
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data.sampler import BatchSampler, SubsetRandomSampler
+# from torch.nn.utils import clip_grad_norm_
+# import torch
+# import torch.nn as nn
+# import torch.nn.functional as F
+# from torch.utils.data.sampler import BatchSampler, SubsetRandomSampler
 
 def second_to_hour(seconds):
     m, s = divmod(seconds, 60)
@@ -276,20 +276,24 @@ class CE:
 def t_range(temp_0, t, tau):
     return temp_0*np.exp(-t/tau)
 
-def main(num_process):
+def main(temp):
 
+    sro_list_store = np.zeros((iter_time, 10))
     config = ele_list_gen(1/4, 1/4, 1/4, 1/4, num_c=2048)
-    #* Create the minimum energy and corresponding configuration.
-    config_min = config.copy()
-    weight_config  = ce_e.cluster_extra(config).reshape(-1,1).T
-    energy_min = clf_.predict(weight_config)
+    #* Initialize the cluster model
+    ce_e = CE(ind_1nn, ind_2nn, ind_3nn, ind_4nn, 
+        ind_qua1nn, ind_qua1nn2nn,
+        ind_trip1nn, ind_trip1nn2nn, ind_trip1nn2nn3nn,
+        ind_raw)
+    
+    #* Load the lr model
+    atom_num = 2048
+    date = '20221101'
+    pth = f'/media/wz/a7ee6d50-691d-431a-8efb-b93adc04896d/Github/MATools/CE_MC/runs/demo/{date}'
+    lr_name = '/blr.sav'
+    clf_ = pickle.load(open(pth+lr_name, 'rb'))
 
     for i in range(iter_time):
-        if i <= 4000:
-            temp = t_range(temp_0, i, tau=1000)
-        elif i > 4000:
-            temp = 0.1
-
         # weight_config = norm_w(ce_e.cluster_extra(config).reshape(-1,1).T,
         #                 weight_mean, weight_std)
         weight_config  = ce_e.cluster_extra(config).reshape(-1,1).T
@@ -297,57 +301,42 @@ def main(num_process):
         # weight_config = torch.from_numpy(weight_config.astype(np.float32)).clone().to(device)
         # energy = fc_(weight_config).cpu().detach().numpy()[0,0]*energy_std + energy_mean
         #* LR's prediction
-        energy = clf_.predict(weight_config)[0]
+        energy = clf_.predict(weight_config)*energy_std + energy_mean
         energy *= atom_num
+        # e_list.append(energy)
+        # config_list[iter_time%50] = config
+        # e_list_store[iter_time%50] = energy
+        #* Extract SRO params of current config..
+        sro = sub_func_ce.sro_extra(ind_1nn, config, 0.25, 0.25, 0.25, 0.25)
+        sro_list_store[i%10000] = sro
 
-        tempo_trial = 10
-        e_list_tempo = np.zeros(tempo_trial)
-        config_list_tempo = np.zeros((tempo_trial, 2048))
-        for j in range(tempo_trial): 
-            while True:
-                a_ind = randrange(len(ind_1nn))
-                action = ind_1nn[a_ind]
-                a1, a2 = config[action[0]], config[action[1]]
-                if a1 != a2:
-                    break
+        while True:
+            a_ind = randrange(len(ind_1nn))
+            action = ind_1nn[a_ind]
+            a1, a2 = config[action[0]], config[action[1]]
+            if a1 != a2:
+                break
 
-            config_ = swap_step(action, config)
-            # weight_config_ = norm_w(ce_e.cluster_extra(config_).reshape(-1,1).T,
-            #                 weight_mean, weight_std)
+        config_ = swap_step(action, config)
+        # weight_config_ = norm_w(ce_e.cluster_extra(config_).reshape(-1,1).T,
+        #                 weight_mean, weight_std)
+        weight_config_ = ce_e.cluster_extra(config_).reshape(-1,1).T
+        #* NN's prediction
+        # weight_config_ = torch.from_numpy(weight_config_.astype(np.float32)).clone().to(device)
+        # energy_ = fc_(weight_config_).cpu().detach().numpy()[0,0]*energy_std + energy_mean
+        #* LR's prediction
+        energy_ = clf_.predict(weight_config_)*energy_std + energy_mean
+        energy_ *= atom_num
 
-            weight_config_ = ce_e.cluster_extra(config_).reshape(-1,1).T
-            #* NN's prediction
-            # weight_config_ = torch.from_numpy(weight_config_.astype(np.float32)).clone().to(device)
-            # energy_ = fc_(weight_config_).cpu().detach().numpy()[0,0]*energy_std + energy_mean
-            #* LR's prediction
-            energy_ = clf_.predict(weight_config_)[0]
-            energy_ *= atom_num
-
-            e_list_tempo[0] = energy_
-            config_list_tempo[1] = config_
-
-        del j
-        
-        energy_ = np.min(e_list_tempo)
-        config_ = config_list_tempo[np.argmin(e_list_tempo)]
-
-        accept = np.min([1, np.exp((energy-energy_)/(k_*temp))])
+        accept = np.min([1, np.exp((energy[0]-energy_[0])/(k_*temp))])
         r_v = np.random.rand()
         if r_v <= accept:
-            config = config_
+                config = config_
         else:
-            config = config
+                config = config
 
-        if energy_ < energy_min:
-            energy_min = energy_
-            config_min = config_
-
-        # if i%1000 == 0:
-        #     print(i)
-
-        clear_output(True)
-
-    return energy_min, config_min, num_process
+    np.save(pth+f'/sro_{temp}', sro_list_store)
+    
 
 if __name__ == '__main__':
     start_ = time.time()
@@ -363,41 +352,16 @@ if __name__ == '__main__':
     ind_trip1nn2nn3nn = np.load('/media/wz/7AD631A4D6316195/Projects/mc_pure_qua/fcc_2048/ind_trip1nn2nn3nn.npy')
     ind_raw = np.load('/media/wz/7AD631A4D6316195/Projects/mc_pure_qua/fcc_2048/ind_raw2048.npy')
 
-    ce_e = CE(ind_1nn, ind_2nn, ind_3nn, ind_4nn, 
-            ind_qua1nn, ind_qua1nn2nn,
-            ind_trip1nn, ind_trip1nn2nn, ind_trip1nn2nn3nn,
-            ind_raw)
-
-    iter_time= 25
-    temp_0 = 1000
+    iter_time= 7500
     k_ = 8.617333262e-5
-
-    #* Load LR model
-    atom_num = 2048
-    date = '20221103'
-    pth = f'/media/wz/a7ee6d50-691d-431a-8efb-b93adc04896d/Github/MATools/CE_MC/runs/demo/{date}'
-    lr_name = '/blr.sav'
-    clf_ = pickle.load(open(pth+lr_name, 'rb'))
-
-    try_num = 20
-    mine_list = np.zeros(try_num)
-    minconfig_list = np.zeros((try_num, atom_num))
+    energy_std, energy_mean = 1, 0
+    temp_range = np.array([100, 200, 300, 400, 500, 800, 1000, 1200, 1600, 2400, 3200, 4800])
+    try_num = len(temp_range) #* Number of processors
 
     pool = mp.Pool(processes = try_num)
-    outputs = pool.map(main, range(try_num))
+    pool.map(main, temp_range)
     pool.close()
     pool.join()
 
-    for output in outputs:
-        mine_list[output[-1]] = output[0]
-        minconfig_list[output[-1]] = output[1]
-
-    np.save(pth+'/min_e.npy', mine_list)
-    np.save(pth+'/minconfig.npy', minconfig_list)
-
     end_ = time.time()
     second_to_hour(end_-start_)
-
-
-
-
