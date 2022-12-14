@@ -174,14 +174,14 @@ print(ideal_1, ideal_2, ideal_3, ideal_4, ideal_5, ideal_6)
 
 ######################################################
 crcr = np.array([2,2])
-mncr = np.array([1,2])
-cocr = np.array([-1,2])
-nicr = np.array([-2,2])
+mncr, crmn = np.array([1,2]), np.array([2,1])
+cocr, crco = np.array([-1,2]), np.array([2,-1])
+nicr, crni = np.array([-2,2]), np.array([2,-2])
 mnmn = np.array([1,1])
-comn = np.array([-1,1])
-nimn = np.array([-2,1])
+comn, mnco = np.array([-1,1]), np.array([1,-1])
+nimn, mnni = np.array([-2,1]), np.array([1,-2])
 coco = np.array([-1,-1])
-nico = np.array([-2,-1])
+nico, coni = np.array([-2,-1]), np.array([-1,-2])
 nini = np.array([-2,-2])
 
 #* Extracting the 1NN short range order parameter
@@ -189,68 +189,99 @@ nini = np.array([-2,-2])
 #* a_crcr, a_mnmn, a_coco, a_nini, a_mncr, a_cocr, a_nicr, a_comn, a_nimn, a_nico
 def sro_extra(ind_nNN, config, cr_, mn_, co_, ni_):
     assert cr_+mn_+co_+ni_ == 1, print('?1?')
-    num_cr, num_mn, num_co, num_ni = np.zeros(4)
+    # num_cr, num_mn, num_co, num_ni = np.zeros(4)
     n_crcr, n_mncr, n_cocr, n_nicr, n_mnmn, n_comn, n_nimn, n_coco, n_nico, n_nini = np.zeros(10)
+    # n_crmn, n_crco, n_crni, n_mnco, n_mnni, n_coni = np.zeros(6)
+    len_all = len(ind_nNN)
+
     for i in ind_nNN:
+        #* Returns the sorted atomic pair
         pair_list = np.sort(np.array([config[i[0]], config[i[1]]]))
 
         if np.linalg.norm(pair_list-crcr) == 0:
-            num_cr += 2
-            n_crcr += 2
+            # num_cr += 1
+            n_crcr += 1
 
         elif np.linalg.norm(pair_list-mnmn) == 0:
-            num_mn += 2
-            n_mnmn += 2
+            # num_mn += 2
+            n_mnmn += 1
 
         elif np.linalg.norm(pair_list-coco) == 0:
-            num_co += 2
-            n_coco += 2
+            # num_co += 2
+            n_coco += 1
 
         elif np.linalg.norm(pair_list-nini) == 0:
-            num_ni += 2
-            n_nini += 2
+            # num_ni += 2
+            n_nini += 1
 
         elif np.linalg.norm(pair_list-mncr) == 0:
-            num_mn += 1
-            num_cr += 1
+            # num_mn += 1
+            # num_cr += 1
             n_mncr += 1
 
         elif np.linalg.norm(pair_list-cocr) == 0:
-            num_co += 1
-            num_cr += 1
+            # num_co += 1
+            # num_cr += 1
             n_cocr += 1
 
         elif np.linalg.norm(pair_list-nicr) == 0:
-            num_ni += 1
-            num_cr += 1
+            # num_ni += 1
+            # num_cr += 1
             n_nicr += 1
 
         elif np.linalg.norm(pair_list-comn) == 0:
-            num_co += 1
-            num_mn += 1
+            # num_co += 1
+            # num_mn += 1
             n_comn += 1
 
         elif np.linalg.norm(pair_list-nimn) == 0:
-            num_ni += 1
-            num_mn += 1
+            # num_ni += 1
+            # num_mn += 1
             n_nimn += 1
 
         elif np.linalg.norm(pair_list-nico) == 0:
-            num_ni += 1
-            num_co += 1
+            # num_ni += 1
+            # num_co += 1
             n_nico += 1
 
-    a_crcr = 1 - n_crcr/num_cr/(cr_)
-    a_mnmn = 1 - n_mnmn/num_mn/(mn_)
-    a_coco = 1 - n_coco/num_co/(co_)
-    a_nini = 1 - n_nini/num_ni/(ni_)
-    a_mncr = 1 - n_mncr/num_mn/(cr_)
-    a_cocr = 1 - n_cocr/num_co/(cr_)
-    a_nicr = 1 - n_nicr/num_ni/(cr_)
-    a_comn = 1 - n_comn/num_co/(mn_)
-    a_nimn = 1 - n_nimn/num_ni/(mn_)
-    a_nico = 1 - n_nico/num_ni/(co_) 
+    # a_crcr = 1 - n_crcr/num_cr/(cr_)
+    # a_mnmn = 1 - n_mnmn/num_mn/(mn_)
+    # a_coco = 1 - n_coco/num_co/(co_)
+    # a_nini = 1 - n_nini/num_ni/(ni_)
+    # a_mncr = 1 - n_mncr/num_mn/(cr_)
+    # a_crmn = 1 - n_crmn/num_cr/(mn_)
+    # a_cocr = 1 - n_cocr/num_co/(cr_)
+    # a_crco = 1 - n_crco/num_cr/(co_)
+    # a_nicr = 1 - n_nicr/num_ni/(cr_)
+    # a_crni = 1 - n_crni/num_cr/(ni_)
+    # a_comn = 1 - n_comn/num_co/(mn_)
+    # a_mnco = 1 - n_mnco/num_mn/(co_)
+    # a_nimn = 1 - n_nimn/num_ni/(mn_)
+    # a_mnni = 1 - n_mnni/num_mn/(ni_)
+    # a_nico = 1 - n_nico/num_ni/(co_) 
+    # a_coni = 1 - n_coni/num_co/(ni_) 
+
+    ''' 
+    This equation returns the overall probability 
+    of finding i-j pair at distance r.
+    '''
+    a_crcr = 1 - n_crcr/len_all/(2*cr_*cr_)
+    a_mnmn = 1 - n_mnmn/len_all/(2*mn_*mn_)
+    a_coco = 1 - n_coco/len_all/(2*co_*co_)
+    a_nini = 1 - n_nini/len_all/(2*ni_*ni_)
+
+    a_mncr = 1 - n_mncr/len_all/(2*mn_*cr_)
+    a_cocr = 1 - n_cocr/len_all/(2*co_*cr_)
+    a_nicr = 1 - n_nicr/len_all/(2*ni_*cr_)
+    a_comn = 1 - n_comn/len_all/(2*co_*mn_)
+    a_nimn = 1 - n_nimn/len_all/(2*ni_*mn_)
+    a_nico = 1 - n_nico/len_all/(2*ni_*co_)
+
+    # len_check = (n_crcr+n_mnmn+n_coco+n_nini+n_mncr+n_cocr
+    #     +n_nicr+n_comn+n_nimn+n_nico)
 
     return np.array([
-        a_crcr, a_mnmn, a_coco, a_nini, a_mncr, a_cocr, a_nicr, a_comn, a_nimn, a_nico
+        a_crcr, a_mnmn, a_coco, a_nini, 
+        a_mncr, a_cocr, a_nicr, a_comn,
+        a_nimn, a_nico, 
     ])
