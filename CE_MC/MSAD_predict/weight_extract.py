@@ -214,7 +214,7 @@ if __name__ == '__main__':
     config_list = []
 
     at_ratio = f'{int(a1*100)}_{int(a2*100)}_{int(a3*100)}'
-    pth = '/media/wz/a7ee6d50-691d-431a-8efb-b93adc04896d/Github/MATools/CE_MC/runs/demo/20221216_msadGA/configs/'
+    pth = '/media/wz/a7ee6d50-691d-431a-8efb-b93adc04896d/Github/MATools_buffer/msadGA/202212/configs/'
 
     for output in outputs:
         config_list.append(output)
