@@ -29,7 +29,8 @@ ind_book = [
 ]
 
 cr_, mn_, co_, ni_ = 1/4, 1/4, 1/4, 1/4
-target_val = 4000
+target_val = 2000
+temperature = 4
 
 benchmark_test = true #* Display the execution time during iteration.
 debug_test = false #* Display the correlation function during each iteration.
@@ -341,10 +342,11 @@ function main(iter)
 
         step_count = 0
         cor_func_raw = cor_func
+        cor_func_n = cor_func
         while true
             action = [rand(1:192), rand(1:192)]
             ele_list_n, r, cor_func_n, done = swap_step(action, cor_func_raw, ele_list, target_val)
-            r_ = exp(r/3)
+            r_ = exp(r/temperature)
             if rand() <= min(r_, 1) && abs(r) > 0.01
                 ele_list = ele_list_n
                 cor_func_raw = cor_func_n
@@ -368,6 +370,6 @@ function main(iter)
     elseif debug_test
         return cor_list 
     else
-        return ele_list
+        return ele_list, norm(cor_func_n)
     end
 end
