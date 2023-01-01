@@ -1,1 +1,1 @@
-Cuda codes for extracting correlation functions within atomic configurations. F********a.
+Cuda codes for extracting correlation functions within atomic configurations. F*********.
