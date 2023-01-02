@@ -24,16 +24,17 @@ ind_3nn = load(pth, "ind_3nn$pbc_term") .+1
 ind_4nn = load(pth, "ind_4nn$pbc_term") .+1
 ind_5nn = load(pth, "ind_5nn$pbc_term") .+1
 ind_6nn = load(pth, "ind_6nn$pbc_term") .+1
+
 ind_book = [
     ind_1nn, ind_2nn, ind_3nn, ind_4nn, ind_5nn, ind_6nn
 ]
 
 cr_, mn_, co_, ni_ = 1/4, 1/4, 1/4, 1/4
-target_val = 2000
-temperature = 4
+target_val = 600
+temperature = 3
 
-benchmark_test = true #* Display the execution time during iteration.
-debug_test = false #* Display the correlation function during each iteration.
+benchmark_test = false #* Display the execution time during iteration.
+debug_test = true #* Display the correlation function during each iteration.
 
 atom_get() = cr_, mn_, co_, ni_ 
 
@@ -220,39 +221,19 @@ function cor_func_embed(state, action)
     # ind_1nn_new = vcat(ind_1nn_new1, ind_1nn_new2)
 
     ind_2nn_raw1 = [i[1] for i in findall(any(ind_2nn .% 192 .== i1, dims=2))]
-    # ind_2nn_new1 = replace(ind_2nn_raw1, i1=>i2)
     ind_2nn_raw2 = [i[1] for i in findall(any(ind_2nn .% 192 .== i2, dims=2))]
-    # ind_2nn_new2 = replace(ind_2nn_raw2, i2=>i1)
-    # ind_2nn_raw = vcat(ind_2nn_raw1, ind_2nn_raw2)
-    # ind_2nn_new = vcat(ind_2nn_new1, ind_2nn_new2)
 
     ind_3nn_raw1 = [i[1] for i in findall(any(ind_3nn .% 192 .== i1, dims=2))]
-    # ind_3nn_new1 = replace(ind_3nn_raw1, i1=>i2)
     ind_3nn_raw2 = [i[1] for i in findall(any(ind_3nn .% 192 .== i2, dims=2))]
-    # ind_3nn_new2 = replace(ind_3nn_raw2, i2=>i1)
-    # ind_3nn_raw = vcat(ind_3nn_raw1, ind_3nn_raw2)
-    # ind_3nn_new = vcat(ind_3nn_new1, ind_3nn_new2)
 
     ind_4nn_raw1 = [i[1] for i in findall(any(ind_4nn .% 192 .== i1, dims=2))]
-    # ind_4nn_new1 = replace(ind_4nn_raw1, i1=>i2)
-    ind_4nn_raw2 = [i[1] for i in findall(any(ind_4nn .% 192 .== i2, dims=2))]
-    # ind_4nn_new2 = replace(ind_4nn_raw2, i2=>i1)
-    # ind_4nn_raw = vcat(ind_4nn_raw1, ind_4nn_raw2)
-    # ind_4nn_new = vcat(ind_4nn_new1, ind_4nn_new2)    
+    ind_4nn_raw2 = [i[1] for i in findall(any(ind_4nn .% 192 .== i2, dims=2))]  
 
     ind_5nn_raw1 = [i[1] for i in findall(any(ind_5nn .% 192 .== i1, dims=2))]
-    # ind_5nn_new1 = replace(ind_5nn_raw1, i1=>i2)
     ind_5nn_raw2 = [i[1] for i in findall(any(ind_5nn .% 192 .== i2, dims=2))]
-    # ind_5nn_new2 = replace(ind_5nn_raw2, i2=>i1)
-    # ind_5nn_raw = vcat(ind_5nn_raw1, ind_5nn_raw2)
-    # ind_5nn_new = vcat(ind_5nn_new1, ind_5nn_new2)
     
     ind_6nn_raw1 = [i[1] for i in findall(any(ind_6nn .% 192 .== i1, dims=2))]
-    # ind_6nn_new1 = replace(ind_6nn_raw1, i1=>i2)
     ind_6nn_raw2 = [i[1] for i in findall(any(ind_6nn .% 192 .== i2, dims=2))]
-    # ind_6nn_new2 = replace(ind_6nn_raw2, i2=>i1)
-    # ind_6nn_raw = vcat(ind_6nn_raw1, ind_6nn_raw2)
-    # ind_6nn_new = vcat(ind_6nn_new1, ind_6nn_new2)
 
     raw_ind1 = [ind_1nn_raw1, ind_2nn_raw1, ind_3nn_raw1, ind_4nn_raw1, ind_5nn_raw1, ind_6nn_raw1]
     raw_ind2 = [ind_1nn_raw2, ind_2nn_raw2, ind_3nn_raw2, ind_4nn_raw2, ind_5nn_raw2, ind_6nn_raw2]
@@ -325,7 +306,7 @@ function swap_step(action, cor_func_n, state, target_val)
         done = false
     end
 
-    a1, a2 = action 
+    a1, a2 = action_ 
     state_[a1], state_[a2] = state_[a2], state_[a1]
 
     return state_, reward, cor_func_new, done
@@ -350,26 +331,33 @@ function main(iter)
             if rand() <= min(r_, 1) && abs(r) > 0.01
                 ele_list = ele_list_n
                 cor_func_raw = cor_func_n
-                step_count += 1
             end
             
             if debug_test
-                push!(cor_list, norm(cor_func_raw))
+                push!(cor_list, norm(cor_func_raw-ideal_mat))
             end
 
-            if done
+            step_count += 1
+            if step_count >= 100_000
                 ele_list = ele_list_n
-                println("iter: $iter, step: $step_count") 
+                break
+            elseif done
+                ele_list = ele_list_n
+                if benchmark_test == false
+                    println("iter: $iter, step: $step_count")
+                end 
                 # return ele_list_n, elapsed_time
                 break
             end
         end
     end
+
     if benchmark_test
         return [elapsed_time, step_count]
     elseif debug_test
+        println(cor_func_all(ele_list, true))
         return cor_list 
     else
-        return ele_list, norm(cor_func_n)
+        return ele_list, norm(cor_func_n-ideal_mat)
     end
 end
