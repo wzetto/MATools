@@ -1,3 +1,6 @@
+import Pkg; Pkg.add("PyCall"); Pkg.add("JLD"); Pkg.add("LinearAlgebra");
+Pkg.add("Random"); Pkg.add("BenchmarkTools")
+
 using PyCall
 using JLD
 using LinearAlgebra
@@ -17,7 +20,7 @@ else
 end
 
 #* Suit with the Julia's format
-pth = "fcc_192/ind_pair$pbc_term.jld"
+pth = "/media/wz/a7ee6d50-691d-431a-8efb-b93adc04896d/Github/MATools/msad/mc/ver2/utils/ind_pair$pbc_term.jld"
 ind_1nn = load(pth, "ind_1nn$pbc_term") .+1
 ind_2nn = load(pth, "ind_2nn$pbc_term") .+1
 ind_3nn = load(pth, "ind_3nn$pbc_term") .+1
@@ -29,12 +32,13 @@ ind_book = [
     ind_1nn, ind_2nn, ind_3nn, ind_4nn, ind_5nn, ind_6nn
 ]
 
-cr_, mn_, co_, ni_ = 1/4, 1/4, 1/4, 1/4
-target_val = 600
-temperature = 3
+cr_, mn_, co_, ni_ = 0.4, 0.05, 0.3, 0.25
+target_val = 100
+temperature = 5
 
 benchmark_test = false #* Display the execution time during iteration.
-debug_test = true #* Display the correlation function during each iteration.
+debug_test = false #* Display the correlation function during each iteration.
+cutoff_iter = 200_000
 
 atom_get() = cr_, mn_, co_, ni_ 
 
@@ -338,8 +342,11 @@ function main(iter)
             end
 
             step_count += 1
-            if step_count >= 100_000
+            if step_count >= cutoff_iter
                 ele_list = ele_list_n
+                if benchmark_test == false
+                    println("iter: $iter, step: $step_count")
+                end
                 break
             elseif done
                 ele_list = ele_list_n
