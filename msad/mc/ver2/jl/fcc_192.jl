@@ -34,7 +34,7 @@ ind_book = [
 
 cr_, mn_, co_, ni_ = 0.4, 0.05, 0.3, 0.25
 target_val = 100
-temperature = 5
+temperature = 3
 
 benchmark_test = false #* Display the execution time during iteration.
 debug_test = false #* Display the correlation function during each iteration.
