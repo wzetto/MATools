@@ -138,39 +138,43 @@ if __name__ == '__main__':
         '133444', '222244', '222444', '223333', '223334',]
 
     #* Lookup table of the indices in weight for each cluster.
-    embed_book = [
-        [i for i in range(0,9)],
-        [i for i in range(9,18)],
-        [i for i in range(18,27)],
-        [i for i in range(27,36)],
-        [i for i in range(36,63)],
-        [i for i in range(63,90)],
-        [i for i in range(90,117)],
-        [i for i in range(117,144)],
-        [i for i in range(144,171)],
-        [i for i in range(171,198)],
-        [i for i in range(198,225)],
-        [i for i in range(225,252)],
-        [i for i in range(252,279)],
-        [i for i in range(279,306)],
-        [i for i in range(306,333)],
-        [i for i in range(333,360)],
-        [i for i in range(360,387)],
-        [i for i in range(387,414)],
-        [i for i in range(414,441)],
-        [i for i in range(441,468)],
-        [i for i in range(468,495)],
-        [i for i in range(495,522)],
-        [i for i in range(522,549)],
-        [i for i in range(549,630)],
-        [i for i in range(630,711)],
-        [i for i in range(711, 792)],
-        [i for i in range(792, 801)],
-        [i for i in range(801, 810)],
-    ]
+    # embed_book = [
+    #     [i for i in range(0,9)],
+    #     [i for i in range(9,18)],
+    #     [i for i in range(18,27)],
+    #     [i for i in range(27,36)],
+    #     [i for i in range(36,63)],
+    #     [i for i in range(63,90)],
+    #     [i for i in range(90,117)],
+    #     [i for i in range(117,144)],
+    #     [i for i in range(144,171)],
+    #     [i for i in range(171,198)],
+    #     [i for i in range(198,225)],
+    #     [i for i in range(225,252)],
+    #     [i for i in range(252,279)],
+    #     [i for i in range(279,306)],
+    #     [i for i in range(306,333)],
+    #     [i for i in range(333,360)],
+    #     [i for i in range(360,387)],
+    #     [i for i in range(387,414)],
+    #     [i for i in range(414,441)],
+    #     [i for i in range(441,468)],
+    #     [i for i in range(468,495)],
+    #     [i for i in range(495,522)],
+    #     [i for i in range(522,549)],
+    #     [i for i in range(549,630)],
+    #     [i for i in range(630,711)],
+    #     [i for i in range(711, 792)],
+    #     [i for i in range(792, 801)],
+    #     [i for i in range(801, 810)],
+    # ]
 
-    qua_embed = np.linspace(810, 810+81*21-1, 81*21).reshape(21, 81).astype(int).tolist()
-    embed_book += qua_embed
+    # qua_embed = np.linspace(810, 810+81*21-1, 81*21).reshape(21, 81).astype(int).tolist()
+    # embed_book += qua_embed
+#* Considering the cluster function's symmetry
+    embed_book = np.load(
+        './CE_MC/runs/demo/20230117_basis_cluster/embed_book_new.npy',
+        allow_pickle = True)
     embed_list = dict(zip(embed_type, embed_val))
 
     ce_ = CE(ind_1nn, ind_2nn, ind_3nn, ind_4nn, ind_5nn, ind_6nn,
@@ -213,7 +217,7 @@ if __name__ == '__main__':
     #* Save results
     config_list = []
 
-    at_ratio = f'{int(a1*100)}_{int(a2*100)}_{int(a3*100)}'
+    at_ratio = f'{int(a1*100)}_{int(a2*100)}_{int(a3*100)}_mergebasis'
     pth = '/media/wz/a7ee6d50-691d-431a-8efb-b93adc04896d/Github/MATools_buffer/msadGA/202212/configs/'
 
     for output in outputs:
