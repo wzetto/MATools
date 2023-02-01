@@ -2,13 +2,6 @@ import math
 import numpy as np
 from random import randrange
 
-ind_1nn = np.load('/media/wz/7AD631A4D6316195/Projects/mc_pure_qua/fcc_192/ind_1nn.npy')
-ind_2nn = np.load('/media/wz/7AD631A4D6316195/Projects/mc_pure_qua/fcc_192/ind_2nn.npy')
-ind_3nn = np.load('/media/wz/7AD631A4D6316195/Projects/mc_pure_qua/fcc_192/ind_3nn.npy')
-ind_4nn = np.load('/media/wz/7AD631A4D6316195/Projects/mc_pure_qua/fcc_192/ind_4nn.npy')
-ind_5nn = np.load('/media/wz/7AD631A4D6316195/Projects/mc_pure_qua/fcc_192/ind_5nn.npy')
-ind_6nn = np.load('/media/wz/7AD631A4D6316195/Projects/mc_pure_qua/fcc_192/ind_6nn.npy')
-
 cr_, mn_, co_, ni_ = 1/3, 1/3, 1/3, 1/3
 def atom_get():
     return cr_, mn_, co_, ni_
@@ -92,14 +85,6 @@ def ideal_cor(cr_content, mn_content, co_content, Nnn, mode='dontprintbro'):
         print(f'ideal cor func of Cr{cr_content*100}Co{co_content*100}Ni{ni_content*100}: {cor_func}')
     return cor_func
 
-ideal_1, ideal_2, ideal_3, ideal_4, ideal_5, ideal_6 = (
-    ideal_cor(cr_, mn_, co_, ind_1nn), 
-    ideal_cor(cr_, mn_, co_, ind_2nn),
-    ideal_cor(cr_, mn_, co_, ind_3nn),
-    ideal_cor(cr_, mn_, co_, ind_4nn),
-    ideal_cor(cr_, mn_, co_, ind_5nn),
-    ideal_cor(cr_, mn_, co_, ind_6nn))
-
 def cor_func(ind_nNN, ele_list):
     cor_func_n = np.zeros(6)
     for i in ind_nNN:
@@ -134,17 +119,6 @@ def ele_list_gen(cr_c, mn_c, co_c, ni_c, mode = 'randchoice'):
     
     return ele_list_raw
 
-def cor_func_all(state, mode='abs'):
-    cor1 = cor_func(ind_1nn, state) - ideal_1
-    cor2 = cor_func(ind_2nn, state) - ideal_2
-    cor3 = cor_func(ind_3nn, state) - ideal_3
-    cor4 = cor_func(ind_4nn, state) - ideal_4
-    cor5 = cor_func(ind_5nn, state) - ideal_5
-    cor6 = cor_func(ind_6nn, state) - ideal_6
-
-    cor_ = np.concatenate([cor1, cor2, cor3, cor4, cor5, cor6])
-    return np.linalg.norm(cor_)
-
 def swap_step(action, cor_func_n, state, target_val):
 
     # cor_func_raw = ((abs(cor_func(ind_1nn, state)-ideal_1)
@@ -169,8 +143,6 @@ def swap_step(action, cor_func_n, state, target_val):
         done = False
 
     return state, reward, cor_func_new, done
-
-print(ideal_1, ideal_2, ideal_3, ideal_4, ideal_5, ideal_6)
 
 ######################################################
 crcr = np.array([2,2])
