@@ -11,7 +11,7 @@ using BenchmarkTools
 """
 Define all the hyperparameters in this file.
 """
-use_pbc = true #* Use pbc condition or not
+use_pbc = true #* Use pbc or not
 
 if use_pbc
     pbc_term = "_pbc"
