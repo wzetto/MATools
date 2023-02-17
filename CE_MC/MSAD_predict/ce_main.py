@@ -53,7 +53,8 @@ class CE:
         #* 21 quadruplets
         qua_indlist_raw, qua_indlist_pbc, 
 
-        ind_raw, use_pbc=True):
+        ind_raw, use_pbc=True, merge_basis=True,
+        normalize_clusterfunc=True):
 
         #* Inner of 32-atom config.
         self.ind_1nn = ind_1nn
@@ -103,6 +104,8 @@ class CE:
 
         self.ind_raw = ind_raw
         self.use_pbc = use_pbc
+        self.merge_basis = merge_basis
+        self.normalize_clusterfunc = normalize_clusterfunc
 
         self.sym_oplist = np.array([2, 1, 1, 0, 6, 0, 4, 12, 24])
         self.sym_optri = np.array([6, 3, 1])
@@ -264,96 +267,100 @@ class CE:
         return sym_op
 
     def sym_op_basis(self, cluster_type, cpr):
-
-        #* Merge the quadruplets' type.
-        if len(cluster_type) == 6:
-            if (cluster_type == '111133' or cluster_type == '112233'
-                or cluster_type == '112334' or cluster_type == '113444'
-                or cluster_type == '223334'):
-                cluster_type = '111133'
-
-            elif cluster_type == '111224' or cluster_type == '133444':
-                cluster_type = '111224'
-            
-            elif cluster_type == '111333' or cluster_type == '222444':
-                cluster_type = '111333'
-            
-            elif (cluster_type == '111123' or cluster_type == '111134'
-                or cluster_type == '111233' or cluster_type == '112234'
-                or cluster_type == '112333' or cluster_type == '113334'
-                or cluster_type == '122334' or cluster_type == '123333'):
-                cluster_type = '111123'
-
-        if cluster_type == 'pair':
-            cpr_ = np.zeros(6)
-            cpr_[[0,1,2]] = cpr[[0,4,8]]
-            cpr_[3] = (cpr[1]+cpr[3])/2 #* phi12-phi21
-            cpr_[4] = (cpr[2]+cpr[6])/2 #* phi13-phi31
-            cpr_[5] = (cpr[5]+cpr[7])/2 #* phi23-phi32
-
-        elif cluster_type == '111':
-            cpr_ = np.zeros(10)
-            cpr_[[0,1,2]] = cpr[[0,13,26]] #* phi111
-            cpr_[3] = np.mean(cpr[[1,3,9]]) #* phi112
-            cpr_[4] = np.mean(cpr[[2,6,18]]) #* phi113
-            cpr_[5] = np.mean(cpr[[4,10,12]]) #* phi122
-            cpr_[6] = np.mean(cpr[[8,20,24]]) #* phi133
-            cpr_[7] = np.mean(cpr[[5,7,11,15,19,21]]) #* phi123
-            cpr_[8] = np.mean(cpr[[14,16,22]]) #* phi223
-            cpr_[9] = np.mean(cpr[[17,23,25]]) #* phi233
-
-        elif cluster_type == '112':
-            cpr_ = np.zeros(18)
-            cpr_[[0,1,2]] = cpr[[0,13,26]] #* phi111
-            cpr_[3] = np.mean(cpr[[1,3]]) #* phi112
-            cpr_[4] = np.mean(cpr[[2,6]]) #* phi113
-            cpr_[5] = np.mean(cpr[4]) #* phi122
-            cpr_[6] = cpr[8] #* phi133
-            cpr_[7] = np.mean(cpr[[5,7]]) #* phi123
-            cpr_[8] = np.mean(cpr[[14,16]]) #* phi223
-            cpr_[9] = cpr[17] #* phi233
-            cpr_[10] = cpr[9] #* phi211
-            cpr_[11] = np.mean(cpr[[10,12]]) #* phi212
-            cpr_[12] = np.mean(cpr[[11,15]]) #* phi213
-            cpr_[13] = cpr[18] #* phi311
-            cpr_[14] = np.mean(cpr[[19,21]]) #* phi312
-            cpr_[15] = np.mean(cpr[[20,24]]) #* phi313
-            cpr_[16] = cpr[22] #* phi322
-            cpr_[17] = np.mean(cpr[[23,25]]) #* phi323
-
-        elif cluster_type == '123':
-            cpr_ = cpr
         
-        elif cluster_type == '111111':
+        if self.merge_basis:
+            #* Merge the quadruplets' type.
+            if len(cluster_type) == 6:
+                if (cluster_type == '111133' or cluster_type == '112233'
+                    or cluster_type == '112334' or cluster_type == '113444'
+                    or cluster_type == '223334'):
+                    cluster_type = '111133'
+
+                elif cluster_type == '111224' or cluster_type == '133444':
+                    cluster_type = '111224'
+                
+                elif cluster_type == '111333' or cluster_type == '222444':
+                    cluster_type = '111333'
+                
+                elif (cluster_type == '111123' or cluster_type == '111134'
+                    or cluster_type == '111233' or cluster_type == '112234'
+                    or cluster_type == '112333' or cluster_type == '113334'
+                    or cluster_type == '122334' or cluster_type == '123333'):
+                    cluster_type = '111123'
+
+            if cluster_type == 'pair':
+                cpr_ = np.zeros(6)
+                cpr_[[0,1,2]] = cpr[[0,4,8]]
+                cpr_[3] = (cpr[1]+cpr[3])/2 #* phi12-phi21
+                cpr_[4] = (cpr[2]+cpr[6])/2 #* phi13-phi31
+                cpr_[5] = (cpr[5]+cpr[7])/2 #* phi23-phi32
+
+            elif cluster_type == '111':
+                cpr_ = np.zeros(10)
+                cpr_[[0,1,2]] = cpr[[0,13,26]] #* phi111
+                cpr_[3] = np.mean(cpr[[1,3,9]]) #* phi112
+                cpr_[4] = np.mean(cpr[[2,6,18]]) #* phi113
+                cpr_[5] = np.mean(cpr[[4,10,12]]) #* phi122
+                cpr_[6] = np.mean(cpr[[8,20,24]]) #* phi133
+                cpr_[7] = np.mean(cpr[[5,7,11,15,19,21]]) #* phi123
+                cpr_[8] = np.mean(cpr[[14,16,22]]) #* phi223
+                cpr_[9] = np.mean(cpr[[17,23,25]]) #* phi233
+
+            elif cluster_type == '112':
+                cpr_ = np.zeros(18)
+                cpr_[[0,1,2]] = cpr[[0,13,26]] #* phi111
+                cpr_[3] = np.mean(cpr[[1,3]]) #* phi112
+                cpr_[4] = np.mean(cpr[[2,6]]) #* phi113
+                cpr_[5] = np.mean(cpr[4]) #* phi122
+                cpr_[6] = cpr[8] #* phi133
+                cpr_[7] = np.mean(cpr[[5,7]]) #* phi123
+                cpr_[8] = np.mean(cpr[[14,16]]) #* phi223
+                cpr_[9] = cpr[17] #* phi233
+                cpr_[10] = cpr[9] #* phi211
+                cpr_[11] = np.mean(cpr[[10,12]]) #* phi212
+                cpr_[12] = np.mean(cpr[[11,15]]) #* phi213
+                cpr_[13] = cpr[18] #* phi311
+                cpr_[14] = np.mean(cpr[[19,21]]) #* phi312
+                cpr_[15] = np.mean(cpr[[20,24]]) #* phi313
+                cpr_[16] = cpr[22] #* phi322
+                cpr_[17] = np.mean(cpr[[23,25]]) #* phi323
+
+            elif cluster_type == '123':
+                cpr_ = cpr
             
-            cpr_ = np.zeros(15)
-            cpr_[0] = cpr[0] #* phi1111
-            cpr_[1] = np.mean(cpr[[1,3,9,27]]) #* phi1112
-            cpr_[2] = np.mean(cpr[[2,6,18,54]]) #* phi1113
-            cpr_[3] = np.mean(cpr[[4,10,12,28,30,36]]) #* phi1122
-            cpr_[4] = np.mean(cpr[[5,7,11,15,19,21,29,33,45,55,57,63]]) #* phi1123
-            cpr_[5] = np.mean(cpr[[8,20,24,56,60,72]]) #* phi1133
-            cpr_[6] = np.mean(cpr[[13,31,37,39]]) #* phi1222
-            cpr_[7] = np.mean(cpr[[14,16,22,32,34,38,42,46,48,58,64,66]]) #* phi1223
-            cpr_[8] = np.mean(cpr[[17,23,25,35,47,51,59,61,65,69,73,75]]) #* phi1233
-            cpr_[9] = np.mean(cpr[[26,62,74,78]]) #* phi1333
-            cpr_[10] = cpr[40] #* phi2222
-            cpr_[11] = np.mean(cpr[[41,43,49,67]]) #* phi2223
-            cpr_[12] = np.mean(cpr[[44,50,52,68,70,76]]) #* phi2233
-            cpr_[13] = np.mean(cpr[[53,71,77,79]]) #* phi2333
-            cpr_[14] = cpr[80] #* phi3333
+            elif cluster_type == '111111':
+                
+                cpr_ = np.zeros(15)
+                cpr_[0] = cpr[0] #* phi1111
+                cpr_[1] = np.mean(cpr[[1,3,9,27]]) #* phi1112
+                cpr_[2] = np.mean(cpr[[2,6,18,54]]) #* phi1113
+                cpr_[3] = np.mean(cpr[[4,10,12,28,30,36]]) #* phi1122
+                cpr_[4] = np.mean(cpr[[5,7,11,15,19,21,29,33,45,55,57,63]]) #* phi1123
+                cpr_[5] = np.mean(cpr[[8,20,24,56,60,72]]) #* phi1133
+                cpr_[6] = np.mean(cpr[[13,31,37,39]]) #* phi1222
+                cpr_[7] = np.mean(cpr[[14,16,22,32,34,38,42,46,48,58,64,66]]) #* phi1223
+                cpr_[8] = np.mean(cpr[[17,23,25,35,47,51,59,61,65,69,73,75]]) #* phi1233
+                cpr_[9] = np.mean(cpr[[26,62,74,78]]) #* phi1333
+                cpr_[10] = cpr[40] #* phi2222
+                cpr_[11] = np.mean(cpr[[41,43,49,67]]) #* phi2223
+                cpr_[12] = np.mean(cpr[[44,50,52,68,70,76]]) #* phi2233
+                cpr_[13] = np.mean(cpr[[53,71,77,79]]) #* phi2333
+                cpr_[14] = cpr[80] #* phi3333
 
-        elif cluster_type == '111123':
-            cpr_ = cpr
+            elif cluster_type == '111123':
+                cpr_ = cpr
 
-        else: #* Quaduplets other cases
-            pth = './CE_MC/runs/demo/20230117_basis_cluster/'
-            symeq_ = np.load(pth+f'ind_symeq_{cluster_type}.npy', allow_pickle=True)
-            cpr_ = np.zeros(len(symeq_))
-            for i in range(len(symeq_)):
-                cpr_[i] = np.mean(cpr[np.array(symeq_[i])])
+            else: #* Quaduplets other cases
+                pth = '/media/wz/a7ee6d50-691d-431a-8efb-b93adc04896d/Github/MATools/CE_MC/runs/demo/20230117_basis_cluster/'
+                symeq_ = np.load(pth+f'ind_symeq_{cluster_type}.npy', allow_pickle=True)
+                cpr_ = np.zeros(len(symeq_))
+                for i in range(len(symeq_)):
+                    cpr_[i] = np.mean(cpr[np.array(symeq_[i])])
 
-        return cpr_
+            return cpr_
+
+        else:
+            return cpr
 
     def phi1(self, x):
         return 2/math.sqrt(10)*x
@@ -409,7 +416,10 @@ class CE:
             elif type_trip == '123':
                 cpr += self.cpr(cluster, '123')
         
-        cpr = np.array(cpr)/len(ind_trip_all)
+        if self.normalize_clusterfunc:
+            cpr = np.array(cpr)/len(ind_trip_all)
+        elif not self.normalize_clusterfunc:
+            cpr = np.array(cpr)
 
         return cpr
 
@@ -426,7 +436,10 @@ class CE:
 
             cpr += self.cpr(cluster, type_qua)/self.sym_operator(cluster, mode=type_qua)
 
-        cpr = np.array(cpr)/len(ind_qua_all)
+        if self.normalize_clusterfunc:
+            cpr = np.array(cpr)/len(ind_qua_all)
+        elif not self.normalize_clusterfunc:
+            cpr = np.array(cpr)
 
         return cpr
 
@@ -437,6 +450,23 @@ class CE:
 
         #! Very old version in pair correlation function, must
         #! be updated in the future. (If have time I)
+        if embed['point']:
+            len_cr, len_mn, len_co, len_ni = (
+                len(config[config == 2]), len(config[config == 1]),
+                len(config[config == -1]), len(config[config == -2]),
+            )
+            cpr_point = np.sum(np.array([
+                [self.phi1(2), self.phi1(1), self.phi1(-1), self.phi1(-2)],
+                [self.phi2(2), self.phi2(1), self.phi2(-1), self.phi2(-2)],
+                [self.phi3(2), self.phi3(1), self.phi3(-1), self.phi3(-2)],
+            ])*np.array([len_cr, len_mn, len_co, len_ni]),
+            axis=1)
+
+            if self.normalize_clusterfunc:
+                cpr_point = cpr_point/len(config)
+            elif not self.normalize_clusterfunc:
+                cpr_point = cpr_point
+
         cpr_1nn = 0
         if embed['pair1']:
             for i in self.ind_1nn:
@@ -450,7 +480,10 @@ class CE:
                     cluster = np.array([a1, a2])
                     cpr_1nn += (self.cpr(cluster, 'pair')/self.sym_operator(cluster))  
             
-            cpr_1nn = np.array(cpr_1nn)/(len(self.ind_1nn)+len(self.ind_1nn_pbc))
+            if self.normalize_clusterfunc:
+                cpr_1nn = np.array(cpr_1nn)/(len(self.ind_1nn)+len(self.ind_1nn_pbc))
+            elif not self.normalize_clusterfunc:
+                cpr_1nn = np.array(cpr_1nn)
         else:
             cpr_1nn = []
 
@@ -467,7 +500,11 @@ class CE:
                     cluster = np.array([a1, a2])
                     cpr_2nn += (self.cpr(cluster, 'pair')/self.sym_operator(cluster))
 
-            cpr_2nn = np.array(cpr_2nn)/(len(self.ind_2nn)+len(self.ind_2nn_pbc))
+            if self.normalize_clusterfunc:
+                cpr_2nn = np.array(cpr_2nn)/(len(self.ind_2nn)+len(self.ind_2nn_pbc))
+            elif not self.normalize_clusterfunc:
+                cpr_2nn = np.array(cpr_2nn)
+
         else:
             cpr_2nn = []
         
@@ -484,7 +521,10 @@ class CE:
                     cluster = np.array([a1, a2])
                     cpr_3nn += (self.cpr(cluster, 'pair')/self.sym_operator(cluster))
 
-            cpr_3nn = np.array(cpr_3nn)/(len(self.ind_3nn)+len(self.ind_3nn_pbc))
+            if self.normalize_clusterfunc:
+                cpr_3nn = np.array(cpr_3nn)/(len(self.ind_3nn)+len(self.ind_3nn_pbc))
+            elif not self.normalize_clusterfunc:
+                cpr_3nn = np.array(cpr_3nn)
         else:
             cpr_3nn = []
 
@@ -501,7 +541,10 @@ class CE:
                     cluster = np.array([a1, a2])
                     cpr_4nn += (self.cpr(cluster, 'pair')/self.sym_operator(cluster))
 
-            cpr_4nn = np.array(cpr_4nn)/(len(self.ind_4nn)+len(self.ind_4nn_pbc))
+            if self.normalize_clusterfunc:
+                cpr_4nn = np.array(cpr_4nn)/(len(self.ind_4nn)+len(self.ind_4nn_pbc))
+            elif not self.normalize_clusterfunc:
+                cpr_4nn = np.array(cpr_4nn)
         else:
             cpr_4nn = []
 
@@ -518,7 +561,10 @@ class CE:
                     cluster = np.array([a1, a2])
                     cpr_5nn += (self.cpr(cluster, 'pair')/self.sym_operator(cluster))
 
-            cpr_5nn = np.array(cpr_5nn)/(len(self.ind_5nn)+len(self.ind_5nn_pbc))
+            if self.normalize_clusterfunc:
+                cpr_5nn = np.array(cpr_5nn)/(len(self.ind_5nn)+len(self.ind_5nn_pbc))
+            elif not self.normalize_clusterfunc:
+                cpr_5nn = np.array(cpr_5nn)
         else:
             cpr_5nn = []
 
@@ -534,8 +580,11 @@ class CE:
                     a1, a2 = config[i[0]], config[i[1]]
                     cluster = np.array([a1, a2])
                     cpr_6nn += (self.cpr(cluster, 'pair')/self.sym_operator(cluster))
-
-            cpr_6nn = np.array(cpr_6nn)/(len(self.ind_6nn)+len(self.ind_6nn_pbc))
+            
+            if self.normalize_clusterfunc:
+                cpr_6nn = np.array(cpr_6nn)/(len(self.ind_6nn)+len(self.ind_6nn_pbc))
+            elif not self.normalize_clusterfunc:
+                cpr_6nn = np.array(cpr_6nn)
         else:
             cpr_6nn = []
             
@@ -708,7 +757,10 @@ class CE:
                     cluster = np.array([a1, a2, a3, a4])
                     cpr_qua1nn += (self.cpr(cluster, '111111')/self.sym_operator(cluster, mode='qua1nn'))
 
-            cpr_qua1nn = np.array(cpr_qua1nn)/(len(self.ind_qua1nn) + len(self.ind_qua1nn_pbc))
+            if self.normalize_clusterfunc:
+                cpr_qua1nn = np.array(cpr_qua1nn)/(len(self.ind_qua1nn) + len(self.ind_qua1nn_pbc))
+            elif not self.normalize_clusterfunc:
+                cpr_qua1nn = np.array(cpr_qua1nn)
         else:
             cpr_qua1nn = []
 
@@ -725,7 +777,10 @@ class CE:
                     cluster = np.array([a1, a2, a3, a4])
                     cpr_qua1nn2nn += (self.cpr(cluster, '111112')/self.sym_operator(cluster, mode='qua1nn2nn'))
 
-            cpr_qua1nn2nn = np.array(cpr_qua1nn2nn)/(len(self.ind_qua1nn2nn)+len(self.ind_qua1nn2nn_pbc))
+            if self.normalize_clusterfunc:
+                cpr_qua1nn2nn = np.array(cpr_qua1nn2nn)/(len(self.ind_qua1nn2nn)+len(self.ind_qua1nn2nn_pbc))
+            elif not self.normalize_clusterfunc:
+                cpr_qua1nn2nn = np.array(cpr_qua1nn2nn)
         else:
             cpr_qua1nn2nn = []
 
@@ -742,17 +797,21 @@ class CE:
                     cluster = np.array([a1, a2, a3, a4])
                     cpr_qua111122 += (self.cpr(cluster, '111122')/self.sym_operator(cluster, mode='qua111122'))
 
-            cpr_qua111122 = np.array(cpr_qua111122)/(len(self.ind_qua111122)+len(self.ind_qua111122_pbc))
+            if self.normalize_clusterfunc:
+                cpr_qua111122 = np.array(cpr_qua111122)/(len(self.ind_qua111122)+len(self.ind_qua111122_pbc))
+            elif not self.normalize_clusterfunc:
+                cpr_qua111122 = np.array(cpr_qua111122)
         else:
             cpr_qua111122 = []
 
         '''
         The cpr matrix for 21 quadruplet clusters
         '''
-        # cpr_quaremain = np.zeros((21, 81))
-        cpr_quaremain = np.load(
-            './CE_MC/runs/demo/20230117_basis_cluster/qua_embed_new_zero.npy',
-            allow_pickle=True) #* Load the f****** empty g****** array
+        cpr_quaremain = np.zeros((21, 81))
+        if self.merge_basis:
+            cpr_quaremain = np.load(
+                '/media/wz/a7ee6d50-691d-431a-8efb-b93adc04896d/Github/MATools/CE_MC/runs/demo/20230117_basis_cluster/qua_embed_new_zero.npy',
+                allow_pickle=True) #* Load the f****** empty g****** array
 
         qua_remain_embed = [
             '111123', '111133', '111134', '111224',
@@ -794,5 +853,5 @@ class CE:
             cpr_tri233, cpr_tri255, cpr_tri334,
             cpr_tri335, cpr_tri345, cpr_tri444, cpr_tri455, 
             cpr_qua1nn, cpr_qua1nn2nn, cpr_qua111122,
-            cpr_5nn, cpr_6nn, cpr_qua_remain
+            cpr_5nn, cpr_6nn, cpr_qua_remain, cpr_point,
         ], 0)

@@ -119,7 +119,7 @@ if __name__ == '__main__':
 
             ind_quaraw, ind_quapbc, ind_raw,)
 
-    embed_val = np.ones(49).astype(bool)
+    embed_val = np.ones(50).astype(bool)
 
     embed_type = [
         'pair1', 'pair2', 'pair3', 'pair4', 
@@ -135,7 +135,7 @@ if __name__ == '__main__':
         '111233', '111333', '111334', '112233',
         '112234', '112333', '112334', '113334',
         '113344', '113444', '122334', '123333',
-        '133444', '222244', '222444', '223333', '223334',]
+        '133444', '222244', '222444', '223333', '223334','point']
 
     #* Lookup table of the indices in weight for each cluster.
     # embed_book = [
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     # embed_book += qua_embed
 #* Considering the cluster function's symmetry
     embed_book = np.load(
-        './CE_MC/runs/demo/20230117_basis_cluster/embed_book_new.npy',
+        '/media/wz/a7ee6d50-691d-431a-8efb-b93adc04896d/Github/MATools/CE_MC/runs/demo/20230117_basis_cluster/embed_book_new_230212.npy',
         allow_pickle = True)
     embed_list = dict(zip(embed_type, embed_val))
 
@@ -203,8 +203,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--atomic_ratios', type=float, nargs=4, 
     required=True)
-    parser.add_argument('--max_processor', type=int, default=16)
-    parser.add_argument('--num_config', type=int, default=5000)
+    parser.add_argument('--max_processor', type=int, default=20)
+    parser.add_argument('--num_config', type=int, default=1000)
     args = parser.parse_args()
 
     #* Multi-processing part
@@ -217,7 +217,7 @@ if __name__ == '__main__':
     #* Save results
     config_list = []
 
-    at_ratio = f'{int(a1*100)}_{int(a2*100)}_{int(a3*100)}_mergebasis'
+    at_ratio = f'{int(a1*100)}_{int(a2*100)}_{int(a3*100)}_mergebasis_50cluster'
     pth = '/media/wz/a7ee6d50-691d-431a-8efb-b93adc04896d/Github/MATools_buffer/msadGA/202212/configs/'
 
     for output in outputs:

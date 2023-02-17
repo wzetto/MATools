@@ -202,8 +202,9 @@ Return the row indices
 Then update cor_func_res with cpr(new) - cpr(raw)
 return the residue - which is the "minus reward"
 """
-function cor_func_embed(state, action)
+function cor_func_embed(state_r, action)
     i1, i2 = action
+    state = copy(state_r)
     a1, a2 = state[i1], state[i2]
 
     if i1 == 192
