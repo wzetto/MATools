@@ -9,9 +9,6 @@ ind_4nn = np.load('G:/マイドライブ/project/SQS_drl/fcc_108/ind_4nn.npy')
 ind_5nn = np.load('G:/マイドライブ/project/SQS_drl/fcc_108/ind_5nn.npy')
 ind_6nn = np.load('G:/マイドライブ/project/SQS_drl/fcc_108/ind_6nn.npy')
 ind_tri1 = np.load('G:/マイドライブ/project/SQS_drl/fcc_108/ind_tri1nn.npy')
-# ele_demo_20 = np.load('/media/wz/7AD631A4D6316195/Projects/SQS_drl/elelist_3333_20.npy')[:10]
-# ele_demo_30 = np.load('/media/wz/7AD631A4D6316195/Projects/SQS_drl/elelist_3333_30.npy')[:10]
-# ele_demo_40 = np.load('/media/wz/7AD631A4D6316195/Projects/SQS_drl/elelist_3333_40.npy')[:10]
 # ele_demo = np.concatenate([ele_demo_40, ele_demo_20, ele_demo_30], axis=0)
 # len_demo = len(ele_demo)
 cr_, co_, ni_ = 0.5, 0.15, 0.35
